@@ -1,4 +1,4 @@
- 🏠 House Price Prediction
+# 🏠 House Price Prediction
 
 Predicting house prices in Ames, Iowa using Machine Learning.
 
@@ -6,20 +6,26 @@ Predicting house prices in Ames, Iowa using Machine Learning.
 
 ## 🎯 Results
 
-| Metric | Value |
-|--------|-------|
-| **Model** | Linear Regression |
-| **R² Score** | 0.93 |
-| **RMSE** | $22,902 |
-| **Features** | 301 (after encoding) |
+| Model | CV R² Mean | CV R² Std | Validation RMSE |
+|-------|-----------|-----------|-----------------|
+| **Lasso (α=0.001)** | **0.8671** | 0.0592 | $25,122 |
+| **Ridge (α=50)** | **0.8657** | 0.0532 | $25,107 |
+| Linear Regression | 0.8161 | 0.0502 | $22,902 |
 
-**Interpretation:** The model explains 93% of price variance. Average prediction error is ~$23k.
+**Best Model:** Lasso Regression with automatic feature selection (85 out of 301 features selected)
+
+**Important Note:** 
+- Single train/val split showed R² = 0.93 (optimistically biased)
+- 5-Fold Cross-Validation revealed true performance: R² = 0.82-0.87
+- **Lesson:** Always use cross-validation for reliable model evaluation!
+
+**Interpretation:** The model explains ~87% of price variance. Average prediction error is ~$25k.
 
 ## 🛠 Tech Stack
 
 - **Language:** Python
 - **Data:** Pandas, NumPy
-- **ML:** Scikit-Learn (Linear Regression, Ridge, Lasso, Pipelines)
+- **ML:** Scikit-Learn (Linear Regression, Ridge, Lasso, Pipelines, Cross-Validation)
 - **Viz:** Matplotlib, Seaborn
 - **Env:** Jupyter Notebook
 
@@ -62,40 +68,47 @@ jupyter notebook notebooks/01_exploratory_analysis.ipynb
 ```python
 import joblib
 import pandas as pd
+import numpy as np
 
 # Load artifacts
-model = joblib.load('models/linear_model.pkl')
+model = joblib.load('models/lasso_model.pkl')
 preprocessor = joblib.load('models/preprocessor.pkl')
 
-# Prepare new data
+# Prepare new data (example features)
 new_house = pd.DataFrame({
     'OverallQual': [8],
     'GrLivArea': [2000],
     'GarageCars': [2],
-    # ... other features
+    'TotalBsmtSF': [1000],
+    '1stFlrSF': [1200],
+    # ... other features (all 79 features needed)
 })
 
 # Preprocess and predict
+
 processed = preprocessor.transform(new_house)
-price = model.predict(processed)
+price_log = model.predict(processed)
+price = np.expm1(price_log)  # Convert back from log scale
 
 print(f"Estimated price: ${price[0]:,.0f}")
 ```
 
 ## 📊 Key Findings
 
-- **Top 3 Features:** `OverallQual`, `GrLivArea`, `GarageCars` drive price the most.
-- **Data Quality:** Log-transformation of target reduced skew from 1.88 → 0.12, improving model stability.
-- **Model Choice:** Simple Linear Regression performed best (R²=0.93); Ridge/Lasso didn't improve metrics.
-
+- Top 3 Features: OverallQual, GrLivArea, GarageCars drive price the most.
+- Data Quality: Log-transformation of target reduced skew from 1.88 → 0.12, improving model stability.
+- Model Choice: Lasso/Ridge outperformed Linear Regression by ~5% R² gain, demonstrating that regularization is beneficial for this dataset.
+- Feature Selection: Lasso automatically selected 85 out of 301 features (28%), improving interpretability.
+- Cross-Validation Impact: Single split gave misleading R²=0.93; 5-Fold CV revealed true performance of R²=0.82-0.87.
 
 ## 🎓 Key Learnings
 
-- ✅ Log-transformation is critical for skewed target variables in regression.
-- ✅ Pipelines prevent data leakage during preprocessing.
-- ✅ Feature importance analysis helps interpret model decisions.
-- ✅ Regularization (Ridge/Lasso) is powerful but requires careful alpha tuning.
-
+- ✅ Cross-validation is essential — single train/test splits can be optimistically biased
+- ✅ Regularization matters — Ridge/Lasso improved performance by 5% over plain Linear Regression
+- ✅ Log-transformation is critical for skewed target variables in regression
+- ✅ Pipelines prevent data leakage during preprocessing and cross-validation
+- ✅ Feature importance analysis helps interpret model decisions
+- ✅ High variance across CV folds (std: 0.05) indicates data heterogeneity — consider stratified splitting or more data
 
 ## 📈 Visualizations
 
@@ -108,6 +121,29 @@ print(f"Estimated price: ${price[0]:,.0f}")
 ![Feature Importance](results/09_feature_importance.png)
 
 *Figure: Top 15 features by coefficient magnitude in the Linear Regression model.*
+
+## 📝 Methodology
+
+### 1. Exploratory Data Analysis (EDA)
+- Analyzed distributions, correlations, and missing values
+- Identified right-skewed target variable (skewness: 1.88)
+
+### 2. Preprocessing
+- Log-transformed SalePrice to normalize distribution
+- Median imputation for numeric features
+- One-Hot Encoding for 43 categorical features
+- StandardScaler for numeric features
+- **Total:** 301 features after encoding
+
+### 3. Model Training & Evaluation
+- Single 80/20 train/validation split (initial)
+- **5-Fold Cross-Validation** (final, statistically valid)
+- Tested: Linear Regression, Ridge (multiple α), Lasso (multiple α)
+- Selected best model based on CV R² score
+
+### 4. Model Selection
+- **Lasso (α=0.001) selected**: CV R² = 0.8671, 85 features selected
+- Outperformed Linear Regression by ~5% R²
 
 
 ## 👤 Author
