@@ -145,7 +145,6 @@ print(f"Estimated price: ${price[0]:,.0f}")
 - **Lasso (α=0.001) selected**: CV R² = 0.8671, 85 features selected
 - Outperformed Linear Regression by ~5% R²
 
-
 ## 👤 Author
 
 Beksultan — rsuvbe
