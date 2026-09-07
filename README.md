@@ -39,6 +39,7 @@ house-price-prediction/
 
 ## 🚀 Quick Start
 
+```text
 # 1. Clone repository
 git clone [https://github.com/rsuvbe/house-price-prediction.git](https://github.com/rsuvbe/house-price-prediction.git)  
 cd house-price-prediction
@@ -55,6 +56,7 @@ pip install -r requirements.txt
 
 # 5. Run notebooks
 jupyter lab
+```
 
 ## 💻 Usage Example
  
