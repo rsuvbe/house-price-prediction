@@ -35,6 +35,7 @@ house-price-prediction/
 ├── .gitignore               # Git ignore rules
 ├── requirements.txt         # Dependencies
 └── README.md                # This file
+```
 
 ## 🚀 Quick Start
 
@@ -55,11 +56,11 @@ pip install -r requirements.txt
 # 5. Run notebooks
 jupyter lab
 
+## 💻 Usage Example
+ 
+  Because the model is saved as a complete Scikit-Learn Pipeline (combining preprocessing and the regressor), raw data can be passed directly into .predict() without manual transformations.
 
-💻 Usage Example
-
-Because the model is saved as a complete Scikit-Learn Pipeline (combining preprocessing and the regressor), raw data can be passed directly into .predict() without manual transformations.
-
+```python
 import joblib
 import pandas as pd
 import numpy as np
@@ -82,8 +83,9 @@ price_log = pipeline.predict(new_house)
 price = np.expm1(price_log)  # Convert back from log scale
 
 print(f"Estimated price: ${price[0]:,.0f}")
+```
 
-📊 Key Findings
+## 📊 Key Findings
 
     Top Price Drivers: GrLivArea (above-ground living area), OverallQual (overall material and finish quality), and prime locations like Neighborhood_StoneBr and Neighborhood_Crawfor have the highest positive impact on sale prices.
 
@@ -93,7 +95,7 @@ print(f"Estimated price: ${price[0]:,.0f}")
 
     Regularization: Unregularized Linear Regression slightly outperformed Ridge and Lasso on this specific test split, indicating minimal severe multicollinearity after feature preprocessing.
 
-🎓 Key Learnings
+## 🎓 Key Learnings
 
     ✅ Pipelines Prevent Leakage: Bundling preprocessing steps ensures transformations are learned strictly from training folds.
 
