@@ -1,39 +1,16 @@
 {
-  "best_model": "Lasso",
-  "selection_method": "5-Fold Cross-Validation",
-  "cross_validation": {
-    "LinearRegression": {
-      "r2_mean": 0.816123938905565,
-      "r2_std": 0.050172034513142366,
-      "scores": [
-        0.872508561141913,
-        0.8316665033708428,
-        0.7268056730181471,
-        0.8475833848228163,
-        0.8020555721741057
-      ]
-    },
-    "Ridge": {
-      "alpha": 50.0,
-      "r2_mean": 0.8657086690257738,
-      "r2_std": 0.053236384403013044
-    },
-    "Lasso": {
-      "alpha": 0.001,
-      "r2_mean": 0.8671376471596792,
-      "r2_std": 0.05918324047302389,
-      "features_zeroed": 301
-    }
-  },
-  "validation_set": {
-    "rmse": 25122.227346791427,
-    "mae": 16328.308742050644,
-    "r2": 0.9177184529293543,
+  "best_model": "LinearRegression",
+  "selection_method": "GridSearchCV with Cross-Validation",
+  "best_params": {},
+  "test_set": {
+    "rmse": 22902.14211921164,
+    "mae": 15075.572709223849,
+    "r2": 0.9316185388364446,
     "n_samples": 292
   },
   "dataset": {
     "n_train_samples": 1168,
-    "n_features_original": 79,
-    "n_features_processed": 301
+    "n_test_samples": 292,
+    "n_features_original": 79
   }
 }

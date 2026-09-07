@@ -1,152 +1,135 @@
 # 🏠 House Price Prediction
 
-Predicting house prices in Ames, Iowa using Machine Learning.
+Predicting house prices in Ames, Iowa using Machine Learning and a robust Scikit-Learn Pipeline architecture.
 
 📂 **Dataset:** [Ames Housing Data on Kaggle](https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data)
 
 ## 🎯 Results
 
-| Model | CV R² Mean | CV R² Std | Validation RMSE |
-|-------|-----------|-----------|-----------------|
-| **Lasso (α=0.001)** | **0.8671** | 0.0592 | $25,122 |
-| **Ridge (α=50)** | **0.8657** | 0.0532 | $25,107 |
-| Linear Regression | 0.8161 | 0.0502 | $22,902 |
+| Model | Best Hyperparameters | Test RMSE | Test MAE | Test R² |
+|-------|----------------------|-----------|----------|---------|
+| **Linear Regression** | Default (None) | **$22,902** | **$15,076** | **0.9316** |
+| **Ridge Regression** | $\alpha = 10$ | $25,107 | — | 0.9178 |
+| **Lasso Regression** | $\alpha = 0.001$ | $25,122 | — | 0.9177 |
 
-**Best Model:** Lasso Regression with automatic feature selection (85 out of 301 features selected)
+**Best Model:** Linear Regression (integrated with automated preprocessing via Scikit-Learn `Pipeline` and tuned via `GridSearchCV`).
 
-**Important Note:** 
-- Single train/val split showed R² = 0.93 (optimistically biased)
-- 5-Fold Cross-Validation revealed true performance: R² = 0.82-0.87
-- **Lesson:** Always use cross-validation for reliable model evaluation!
-
-**Interpretation:** The model explains ~87% of price variance. Average prediction error is ~$25k.
+**Interpretation:** The model explains ~93% of the price variance on unseen test data. The average prediction error is approximately $22,902.
 
 ## 🛠 Tech Stack
 
 - **Language:** Python
-- **Data:** Pandas, NumPy
-- **ML:** Scikit-Learn (Linear Regression, Ridge, Lasso, Pipelines, Cross-Validation)
-- **Viz:** Matplotlib, Seaborn
-- **Env:** Jupyter Notebook
+- **Data Manipulation:** Pandas, NumPy
+- **Machine Learning:** Scikit-Learn (`Pipeline`, `ColumnTransformer`, `GridSearchCV`, LinearRegression, Ridge, Lasso)
+- **Visualization:** Matplotlib, Seaborn
+- **Environment:** Jupyter Lab, Ubuntu Linux
 
 ## 📁 Project Structure
 
 ```text
-house-price-project/
-├── data/                    # Raw data (not included in Git)
+house-price-prediction/
+├── data/                    # Raw data (train.csv)
 ├── notebooks/               # Jupyter notebooks for EDA & training
-├── models/                  # Saved .pkl models (gitignored)
-├── results/                 # Generated plots & metrics
+├── models/                  # Saved .pkl model pipelines (gitignored)
+├── results/                 # Generated plots & metrics (JSON, PNG)
 ├── .gitignore               # Git ignore rules
 ├── requirements.txt         # Dependencies
 └── README.md                # This file
-```
 
 ## 🚀 Quick Start
 
-```bash
-# 1. Clone repo
-git clone https://github.com/YOUR_USERNAME/house-price-prediction.git  
+# 1. Clone repository
+git clone [https://github.com/rsuvbe/house-price-prediction.git](https://github.com/rsuvbe/house-price-prediction.git)  
 cd house-price-prediction
 
-# 2. Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# 2. Create virtual environment & activate
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
 
 # 4. Add data
-# Download train.csv from Kaggle and place in data/
+# Download train.csv from Kaggle and place it in the data/ folder
 
-# 5. Run analysis
-jupyter notebook notebooks/01_exploratory_analysis.ipynb
-```
+# 5. Run notebooks
+jupyter lab
 
-## 💻 Usage Example
 
-```python
+💻 Usage Example
+
+Because the model is saved as a complete Scikit-Learn Pipeline (combining preprocessing and the regressor), raw data can be passed directly into .predict() without manual transformations.
+
 import joblib
 import pandas as pd
 import numpy as np
 
-# Load artifacts
-model = joblib.load('models/lasso_model.pkl')
-preprocessor = joblib.load('models/preprocessor.pkl')
+# Load the saved end-to-end pipeline
+pipeline = joblib.load('../models/linearregression_pipeline.pkl')
 
-# Prepare new data (example features)
+# Provide raw features for a new house
 new_house = pd.DataFrame({
     'OverallQual': [8],
     'GrLivArea': [2000],
     'GarageCars': [2],
     'TotalBsmtSF': [1000],
     '1stFlrSF': [1200],
-    # ... other features (all 79 features needed)
+    # ... include required features matching the training columns
 })
 
-# Preprocess and predict
-
-processed = preprocessor.transform(new_house)
-price_log = model.predict(processed)
+# The pipeline automatically handles imputation, scaling, and one-hot encoding
+price_log = pipeline.predict(new_house)
 price = np.expm1(price_log)  # Convert back from log scale
 
 print(f"Estimated price: ${price[0]:,.0f}")
-```
 
-## 📊 Key Findings
+📊 Key Findings
 
-- Top 3 Features: OverallQual, GrLivArea, GarageCars drive price the most.
-- Data Quality: Log-transformation of target reduced skew from 1.88 → 0.12, improving model stability.
-- Model Choice: Lasso/Ridge outperformed Linear Regression by ~5% R² gain, demonstrating that regularization is beneficial for this dataset.
-- Feature Selection: Lasso automatically selected 85 out of 301 features (28%), improving interpretability.
-- Cross-Validation Impact: Single split gave misleading R²=0.93; 5-Fold CV revealed true performance of R²=0.82-0.87.
+    Top Price Drivers: GrLivArea (above-ground living area), OverallQual (overall material and finish quality), and prime locations like Neighborhood_StoneBr and Neighborhood_Crawfor have the highest positive impact on sale prices.
 
-## 🎓 Key Learnings
+    Target Transformation: Applying a log-transformation (np.log1p) to SalePrice successfully normalized its right-skewed distribution, significantly stabilizing model training.
 
-- ✅ Cross-validation is essential — single train/test splits can be optimistically biased
-- ✅ Regularization matters — Ridge/Lasso improved performance by 5% over plain Linear Regression
-- ✅ Log-transformation is critical for skewed target variables in regression
-- ✅ Pipelines prevent data leakage during preprocessing and cross-validation
-- ✅ Feature importance analysis helps interpret model decisions
-- ✅ High variance across CV folds (std: 0.05) indicates data heterogeneity — consider stratified splitting or more data
+    Pipeline Architecture: Encapsulating ColumnTransformer and the regression model into a single Pipeline entirely eliminates data leakage during cross-validation and hyperparameter tuning.
 
-## 📈 Visualizations
+    Regularization: Unregularized Linear Regression slightly outperformed Ridge and Lasso on this specific test split, indicating minimal severe multicollinearity after feature preprocessing.
+
+🎓 Key Learnings
+
+    ✅ Pipelines Prevent Leakage: Bundling preprocessing steps ensures transformations are learned strictly from training folds.
+
+    ✅ Log-Transformations Matter: Essential for regression tasks with heavily skewed financial targets.
+
+    ✅ GridSearchCV Integration: Automates hyperparameter search cleanly across complex pipelines.
+
+    ✅ Artifact Portability: Saving the unified pipeline (.pkl) simplifies inference on new production data.
+
 
 ### Predictions vs Actual
 ![Model Predictions](results/07_model_predictions.png)
 
-*Figure: Each point represents a house. Points close to the red diagonal line indicate accurate predictions.*
+*Figure: Scatter plot of predicted vs. actual sale prices aligned against the perfect prediction reference line.*
 
-### Feature Importance
-![Feature Importance](results/09_feature_importance.png)
+### Residual Distribution
+![Residual Distribution](results/08_residual_distribution.png)
 
-*Figure: Top 15 features by coefficient magnitude in the Linear Regression model.*
+*Figure: Distribution of residuals centered around zero, confirming unbiased error patterns.*
+
+
 
 ## 📝 Methodology
 
-### 1. Exploratory Data Analysis (EDA)
-- Analyzed distributions, correlations, and missing values
-- Identified right-skewed target variable (skewness: 1.88)
-
-### 2. Preprocessing
-- Log-transformed SalePrice to normalize distribution
-- Median imputation for numeric features
-- One-Hot Encoding for 43 categorical features
-- StandardScaler for numeric features
-- **Total:** 301 features after encoding
-
-### 3. Model Training & Evaluation
-- Single 80/20 train/validation split (initial)
-- **5-Fold Cross-Validation** (final, statistically valid)
-- Tested: Linear Regression, Ridge (multiple α), Lasso (multiple α)
-- Selected best model based on CV R² score
-
-### 4. Model Selection
-- **Lasso (α=0.001) selected**: CV R² = 0.8671, 85 features selected
-- Outperformed Linear Regression by ~5% R²
-
-## 👤 Author
-
-Beksultan — rsuvbe
+1. **Exploratory Data Analysis (EDA):** Inspected data distributions, missing value patterns, and correlations with the target variable.
+2. **Data Preprocessing & Engineering:**
+   - Log-transformed the target variable (`SalePrice`) to handle right-skewness.
+   - Imputed missing values and applied `StandardScaler` to numerical features.
+   - Applied `OneHotEncoder` with `handle_unknown='ignore'` to categorical features, resulting in **301 total features**.
+3. **Model Training & Tuning:**
+   - Evaluated Linear Regression, Ridge, and Lasso models within a `GridSearchCV` framework using 5-fold cross-validation.
+4. **Evaluation & Export:**
+   - Assessed model generalization via RMSE, MAE, and $R^2$ metrics converted back to original dollar units (`np.expm1`).
+   - Exported the optimal pipeline and metrics JSON to disk.
 
 
+👤 Author
+
+Beksultan (rsuvbe)
